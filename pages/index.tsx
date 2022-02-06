@@ -1,16 +1,20 @@
+import { useCallback, useEffect, useState } from "react";
 import type { NextPage, GetServerSideProps } from "next";
-import Header from "components/Header";
+
 import i18n from "lib/i18n";
 import readFile from "utils/readFile";
-import parseContent from "utils/parseContent";
-import Cache from "model/Cache";
-import CartJs from "lib/Chartjs";
+import Datas from "model/Datas";
+import Layout from "components/Layout";
+import ShowGraphs from "components/ShowGraphs";
+import ShowHistory from "components/ShowHistory";
+import Calculation from "model/Calculation";
+import EstimatePrice from "components/EstimatePrice";
+import DisplayInput from "components/DatasetInput";
 
 export const getServerSideProps: GetServerSideProps = i18n.getTranslations(
   async ({ req }) => {
-    const content = parseContent(readFile("./ressource/data.csv"));
+    const content = readFile("./ressource/data.csv");
     let error = "";
-    console.log(content);
     if (typeof content === "string") {
       error = content;
     }
@@ -26,26 +30,33 @@ type Props = {
 };
 
 export const Home: NextPage<Props> = ({ content, error }) => {
-  const cache = new Cache(content);
+  const [datas, setDatas] = useState(content);
+  const datasObj = new Datas(datas);
+  const calculation = new Calculation(datasObj);
+
+  const xNormalized =
+    calculation.normalizeValues(datasObj.get("km"), datasObj.get("km")) || [];
+  const yNormalized =
+    calculation.normalizeValues(datasObj.get("price"), datasObj.get("price")) ||
+    [];
+  calculation.computerThetas({
+    iteration: 500,
+    x: xNormalized,
+    y: yNormalized,
+  });
 
   return (
-    <div>
-      <Header />
-      <main>
-        <h3>Ft_linear_regression</h3>
-        {error}
-        <div className="row">
-          <div className="col-md-6 offset-md-2">
-            <CartJs
-              labels={cache.get("km").map((e) => e.toString())}
-              datas={cache.get("price")}
-              label="Price"
-            />
-          </div>
-        </div>
-        {/* {test} */}
-      </main>
-    </div>
+    <Layout>
+      {error}
+      <EstimatePrice calculation={calculation} />
+      <hr />
+      <DisplayInput datas={datas} setDatas={setDatas} />
+      <hr />
+      <ShowGraphs calculation={calculation} />
+      <hr />
+      <ShowHistory calculation={calculation} />
+      <hr />
+    </Layout>
   );
 };
 
