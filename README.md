@@ -1,5 +1,7 @@
 This is the **ft_linear_regression** from the **school 42**.
 
+The first step into machine learning.
+
 It was make in Js with the help of the framework Nextjs.
 
 ## Getting Started
