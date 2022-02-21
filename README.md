@@ -1,4 +1,5 @@
-This is the ft_linear_regression from the school 42.
+This is the **ft_linear_regression** from the **school 42**.
+
 It was make in Js with the help of the framework Nextjs.
 
 ## Getting Started
